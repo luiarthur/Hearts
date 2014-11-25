@@ -42,4 +42,3 @@ one.play.one.trick <- function(i,j,hand,m=c(.25,.25,.25,.25),p=c(0,0,0,0)) {
   
   list("card"=card,"hand"=hand)
 }
-
