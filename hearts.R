@@ -32,13 +32,14 @@ one.play.one.trick <- function(i,j,hand,m=c(.25,.25,.25,.25),p=c(0,0,0,0)) {
   # Make sure no one shoots the moon.
   # Beat Mickeys player.
 
-  played <- matrix("x",13,4)
-
-  if (all(played)=="x") {
+  if (i==1 && j==1) {
     starter <- which(apply(hand,2,function(x) "2C" %in% x))
-    play <- "2C"
+    if (starter > 1) {
+      hand <- cbind(hand[,starter:4],hand[1:(starter-1)])
+    }
+    card <- "2C"
   }
   
-  card
+  list("card"=card,"hand"=hand)
 }
 
