@@ -74,17 +74,25 @@ one.play.one.trick <- function(hand,played,i,m=c(.25,.25,.25,.25),p=c(0,0,0,0)) 
   card <- NULL
   i.am.first <- ifelse(all(played[i,]==0),T,F)
 
+  # play a card
   if (i==1) {
     if ("2C" %in% hand){
       card <- "2C"
     } else {
+
       # Stopped HERE!     
+      # if !(i.am.first)
       # 1. play 0-pt card IN suit
       # 3. play pt card IN suit
       # 2. play 0-pt card OUT of suit
       # 4. play pt card OUT of suit
+      # if i.am.first
+      # 5. start trick with 0-pt card
+      # 6. start trick with pt card
     }
   }
   
   list("card"=card,"hand"=hand)
 }
+
+
