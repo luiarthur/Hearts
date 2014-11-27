@@ -65,7 +65,7 @@ short.suited <- function(suit.in.play,unplayed.hand) {
 }
 
 #Simulate a Round 
-simulate.a.round <- function() {
+simulate.a.round <- function(its) {
   evaluate.a.trick <- function(plays,i,starter) {
     # 1. plays is a matrix containing the cards that each player plays
     #    in each round (row)
@@ -81,16 +81,21 @@ simulate.a.round <- function() {
     list("points"=points,"starter"=starter)
   }
 
+  # Something wrong here
   play.a.card <- function(plays,hands,i,j,starter,random=T) {
     hand <- hands[,j]
     played <- plays[,j]
     possible.cards.to.play <- hand
+    suit.in.play <- get.suit(play[starter])
+
     if (i>1) possible.cards.to.play <- hand[-which(hand %in% played)] 
-    if (starter==j && !hearts.broken(plays) && any(get.suit(possible.cards.to.play)!="H")) {
+    if (starter==j && !hearts.broken(plays) && 
+        any(get.suit(possible.cards.to.play)!="H")) {
+      # you can't start with a heart if hearts haven't been broken, and 
+      # you have cards that are not hearts
       possible.cards.to.play <- possible.cards.to.play[-which(get.suit(hand)=="H")]
     }
 
-    suit.in.play <- get.suit(play[starter])
     if (!(short.suited(suit.in.play,possible.cards.to.play))) {
       #if not short suited, play in suit
       pos <- possible.cards.to.play
@@ -103,9 +108,6 @@ simulate.a.round <- function() {
           possible.cards.to.play <- pos[-hearts]
         }
       }
-    } else {
-      pos <- possible.cards.to.play
-      pos <- pos[which(get.suit(pos)==suit.in.play)]
     }
     if (random) sample(possible.cards.to.play,1)
   }
@@ -135,8 +137,8 @@ simulate.a.round <- function() {
     if (i<13) starter[i+1] <- trick$starter
   }
   
-  print(cbind(starter,plays))
-  points
+  data <- cbind(starter,plays)
+  list("points"=points,"data"=data)
 }
 
-simulate.a.round()
+X <- lapply(as.list(1:100), simulate.a.round)
