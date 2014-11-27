@@ -60,56 +60,71 @@ hearts.broken <- function(plays) {
   any(get.suit(plays)=="H")
 }
 
+# is the player short suited?
 short.suited <- function(suit.in.play,unplayed.hand) {
   all(get.suit(unplayed.hand) != suit.in.play)
 }
 
-#Simulate a Round 
-simulate.a.round <- function(its) {
-  evaluate.a.trick <- function(plays,i,starter) {
-    # 1. plays is a matrix containing the cards that each player plays
-    #    in each round (row)
-    # 2. starter is the player that starts the trick
-    play <- plays[i,]
-    suit.in.play <- get.suit(play[starter])
-    players.in.suit <- which(get.suit(play)==suit.in.play)
-    vals.in.suit <- as.numeric(get.value(play[players.in.suit]))
 
-    starter <- players.in.suit[which.max(vals.in.suit)]
-    points <- sum(get.suit(play)=="H") + ifelse("12S" %in% play,13,0)
+# Evaluates the number of points taken by each player, and who starts next trick.
+evaluate.a.trick <- function(plays,i,starter) {
+  # 1. plays is a matrix containing the cards that each player plays
+  #    in each round (row)
+  # 2. starter is the player that starts the trick
+  play <- plays[i,]
+  suit.in.play <- get.suit(play[starter])
+  players.in.suit <- which(get.suit(play)==suit.in.play)
+  vals.in.suit <- as.numeric(get.value(play[players.in.suit]))
 
-    list("points"=points,"starter"=starter)
-  }
+  starter <- players.in.suit[which.max(vals.in.suit)]
+  points <- sum(get.suit(play)=="H") + ifelse("12S" %in% play,13,0)
 
-  # Something wrong here
-  play.a.card <- function(plays,hands,i,j,starter,random=T) {
-    hand <- hands[,j]
-    played <- plays[,j]
-    possible.cards.to.play <- hand
-    suit.in.play <- get.suit(play[starter])
+  list("points"=points,"starter"=starter)
+}
 
-    if (i>1) possible.cards.to.play <- hand[-which(hand %in% played)] 
-    if (starter==j && !hearts.broken(plays) && 
-        any(get.suit(possible.cards.to.play)!="H")) {
-      # you can't start with a heart if hearts haven't been broken, and 
-      # you have cards that are not hearts
-      possible.cards.to.play <- possible.cards.to.play[-which(get.suit(hand)=="H")]
-    }
 
-    if (!(short.suited(suit.in.play,possible.cards.to.play))) {
-      #if not short suited, play in suit
-      pos <- possible.cards.to.play
-      possible.cards.to.play <- pos[which(get.suit(pos)==suit.in.play)]
-      if (!hearts.broken(plays) && suit.in.play != "H") {
-        if (any(is.heart(possible.cards.to.play))){
-          # if hearts not broken and not in hearts and you have non hearts
-          pos <- possible.cards.to.play
-          hearts <- which(get.suit(pos) == "H")
-          possible.cards.to.play <- pos[-hearts]
+# Determines what cards in a players hand are valid to play each round.
+possible.cards.to.play  <- function(plays,hands,i,j,starter) {
+  # pos = possible cards to play
+  # plays = cards already played (13 x 4 matrix)
+  # hands = the hands of each player (13 x 4 matrix). hands can have only
+  #         one known column
+  # i = the round number
+  # j = the player number
+  # starter = the player that started / will start the round
+           
+  pos <- hands[,j]
+  if (i==1) {
+    if (j==starter) {
+      pos <- "2C"
+    } else if (any(!(is.point.card(pos)))) {
+        if (any(is.point.card(pos))) pos <- pos[-which(is.point.card(pos))]
+        if (!short.suited("C",pos)) {
+          pos <- pos[which(get.suit(pos)=="C")]
         }
       }
+    } else { #i.e. if i>1
+    pos <- pos[-which(pos %in% plays[,j])]
+    if (j==starter) {
+      if (any(!(is.heart(pos))) && !hearts.broken(plays)) {
+        if (any(is.heart(pos))) pos <- pos[-which(is.heart(pos))]
+      }
+    } else {
+      suit.in.play <- get.suit(plays[i,starter])
+      if (!short.suited(suit.in.play,pos)) {
+        pos <- pos[which(get.suit(pos)==suit.in.play)]
+      } 
     }
-    if (random) sample(possible.cards.to.play,1)
+  }
+  
+  pos
+}
+
+#Simulate a Round 
+simulate.a.round <- function(its) {
+  play.a.card <- function(plays,hands,i,j,starter,random=T) {
+    pos <- possible.cards.to.play(plays,hands,i,j,starter)
+    if (random) sample(pos,1)
   }
 
   hands <- apply(deal(),2,sort.hand)
@@ -137,8 +152,8 @@ simulate.a.round <- function(its) {
     if (i<13) starter[i+1] <- trick$starter
   }
   
-  data <- cbind(starter,plays)
-  list("points"=points,"data"=data)
+  data <- cbind(starter,plays,points)
+  data
 }
 
-X <- lapply(as.list(1:100), simulate.a.round)
+X <- lapply(as.list(1:1000), simulate.a.round)
