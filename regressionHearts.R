@@ -1,3 +1,4 @@
+source("rapply.R")
 source("settings.R")
 
 # This is all regression
@@ -13,15 +14,5 @@ Y <- numeric(N)
 #x3 = # of cards in suit I hold
 #x4 = # of cards in suit others hold
 
-S <- lapply(Z,function(z) {
-  out <- matrix(0,0,ncol(z))
-  for (i in 1:13) {
-    if (any(get.suit(z[i,2:5])=="S")) {
-      if (z[i,1] %in% which(get.suit(z[i,2:5])=="S")){
-        out <- rbind(out,z[i,])
-      }
-    }
-  }
-  out
-})
+new.Z <- lapply(Z,move)
 

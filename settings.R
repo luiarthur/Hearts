@@ -67,7 +67,7 @@ short.suited <- function(suit.in.play,unplayed.hand) {
 
 
 # Evaluates the number of points taken by each player, and who starts next trick.
-evaluate.a.trick <- function(plays,i,starter) {
+evaluate.a.trick <- function(plays,i,starter,list=T) {
   # 1. plays is a matrix containing the cards that each player plays
   #    in each round (row)
   # 2. starter is the player that starts the trick
@@ -79,7 +79,13 @@ evaluate.a.trick <- function(plays,i,starter) {
   starter <- players.in.suit[which.max(vals.in.suit)]
   points <- sum(get.suit(play)=="H") + ifelse("12S" %in% play,13,0)
 
-  list("points"=points,"starter"=starter)
+  if (list) {
+    out <- list("points"=points,"starter"=starter)
+  } else {
+    out <- paste0(starter,".",points)
+  }
+
+  out
 }
 
 
@@ -155,6 +161,34 @@ simulate.a.round <- function(its) {
   data <- cbind(starter,plays,points)
   data
 }
+
+col13 <- matrix(1:13)
+move <- function(z,start=1) {
+  # Reorders the data so that the first player of each trick 
+  # is in the first column, etc.
+
+  out <- NULL
+  played <- z[,2:5]
+
+  game <- apply(col13,1,function(x) {
+    z1x <- as.numeric(z[x,1])
+    play <- played[x,]
+    if (z1x==1) {
+      out <- play
+    } else {
+      out <- c(play[z1x:4],play[1:(z1x-1)])
+    }
+    out <- c(out,evaluate.a.trick(played,x,start,F))
+    out
+  })
+  
+  game <- t(game)
+  colnames(game) <- c(paste0(c("1st","2nd","3rd","4th"),".player"),"player.points")
+
+  game
+}
+
+
 
 # Assume no moons
 calc.winner.of.round <- function(data) {
