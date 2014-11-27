@@ -156,4 +156,3 @@ simulate.a.round <- function(its) {
   data
 }
 
-X <- lapply(as.list(1:1000), simulate.a.round)
