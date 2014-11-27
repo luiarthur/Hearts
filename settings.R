@@ -1,5 +1,5 @@
-original.width <- options("width")
-options("width"=100)
+#original.width <- options("width")
+#options("width"=100)
 
 # Define the suits & values
 suits <- c("C","D","S","H")
@@ -155,4 +155,15 @@ simulate.a.round <- function(its) {
   data <- cbind(starter,plays,points)
   data
 }
+
+# Assume no moons
+calc.winner.of.round <- function(data) {
+  points <- data[,6:9]
+  points <- t(apply(points,1,as.numeric))
+  summed.points <- apply(points,2,sum)
+  which.min(summed.points)
+}
+
+#winner.count <- as.numeric(lapply(Z,calc.winner.of.round))
+#table(winner.count)/N
 

@@ -31,4 +31,3 @@ S <- lapply(Z,function(z) {
   out
 })
 
-S[[2]]
